@@ -227,6 +227,47 @@ XRAY_NUM = ["price", "sales", "parent_sales", "orders", "revenue", "bsr", "ratin
             "reviews", "sellers"]
 
 
+ST_SPEND = "Spend"
+ST_SALES = "7 Day Total Sales "
+ST_TERM = "Customer Search Term"
+
+
+@st.cache_data(show_spinner=False)
+def load_search_terms(b):
+    """Aggregate an Amazon Sponsored Products search-term report to one row per
+    term: spend, ad sales, ACOS, clicks, orders. Reads .xlsx or .csv."""
+    name_xlsx = True
+    try:
+        df = pd.read_excel(io.BytesIO(b))
+    except Exception:
+        df = _read_csv_any(b)
+        name_xlsx = False
+    if df is None:
+        return None, "Could not read the search-term report."
+    df = _clean_headers(df)
+    # tolerate the trailing space Amazon puts on some headers
+    cols = {c.strip(): c for c in df.columns}
+    term = cols.get("Customer Search Term")
+    spend = cols.get("Spend")
+    sales = next((cols[c] for c in cols if c.startswith("7 Day Total Sales")), None)
+    clicks = cols.get("Clicks")
+    orders = next((cols[c] for c in cols if c.startswith("7 Day Total Orders")), None)
+    if not term or not spend or not sales:
+        return None, ("Not a search-term report — needs Customer Search Term, Spend and "
+                      "7 Day Total Sales columns.")
+    d = pd.DataFrame({"term": df[term].astype(str).str.lower().str.strip()})
+    d["spend"] = pd.to_numeric(df[spend], errors="coerce").fillna(0)
+    d["ad_sales"] = pd.to_numeric(df[sales], errors="coerce").fillna(0)
+    d["clicks"] = pd.to_numeric(df[clicks], errors="coerce").fillna(0) if clicks else 0
+    d["ad_orders"] = pd.to_numeric(df[orders], errors="coerce").fillna(0) if orders else 0
+    g = d.groupby("term", as_index=False).agg(
+        spend=("spend", "sum"), ad_sales=("ad_sales", "sum"),
+        clicks=("clicks", "sum"), ad_orders=("ad_orders", "sum"))
+    acos = g["spend"] / g["ad_sales"].where(g["ad_sales"] > 0)
+    g["acos"] = (acos * 100).round(1)
+    return g, ""
+
+
 @st.cache_data(show_spinner=False)
 def load_cerebro(b):
     df = pd.read_csv(io.BytesIO(b), encoding="utf-8-sig", dtype=str)
@@ -239,7 +280,19 @@ def load_cerebro(b):
     df["keyword"] = df["keyword"].fillna("").str.strip()
     df = df[df["keyword"] != ""].reset_index(drop=True)
     df["ranks"] = df["organic"].notna()
+    df["match"] = df["keyword"].str.lower().str.strip()
     return df, ""
+
+
+def attach_ads(cere, st_df):
+    """Left-join aggregated ad metrics onto the Cerebro keywords by exact term."""
+    if st_df is None:
+        for c in ["spend", "ad_sales", "acos", "clicks", "ad_orders"]:
+            cere[c] = pd.NA
+        return cere, 0
+    m = cere.merge(st_df, left_on="match", right_on="term", how="left")
+    matched = int(m["spend"].notna().sum())
+    return m, matched
 
 
 @st.cache_data(show_spinner=False)
@@ -258,7 +311,7 @@ def load_xray(b):
 
 
 # ================================================================= uploads
-c1, c2 = st.columns(2)
+c1, c2, c3 = st.columns(3)
 with c1:
     st.markdown("##### 1 · Cerebro keyword export")
     cere_file = st.file_uploader("Cerebro CSV", type=["csv"], key="cere",
@@ -267,25 +320,49 @@ with c2:
     st.markdown("##### 2 · X-Ray competitor export")
     xray_file = st.file_uploader("X-Ray CSV", type=["csv"], key="xray",
                                  label_visibility="collapsed")
+with c3:
+    st.markdown("##### 3 · Search-term report (ad data)")
+    st_file = st.file_uploader("Search-term xlsx/csv", type=["xlsx", "csv"], key="stf",
+                               label_visibility="collapsed")
 
 if cere_file is None and xray_file is None:
-    st.info("Upload a Cerebro export, an X-Ray export, or both. Each opens in its own tab below.")
+    st.info("Upload a Cerebro export, an X-Ray export, or both. Add a Sponsored Products "
+            "search-term report to layer spend, ad sales and ACOS onto the keyword tabs.")
     st.stop()
 
-cere_df = xray_df = None
+cere_df = xray_df = st_df = None
+st_matched = 0
+if st_file is not None:
+    st_df, e = load_search_terms(st_file.getvalue())
+    if e:
+        st.error(f"Search-term report: {e}")
 if cere_file is not None:
     cere_df, e = load_cerebro(cere_file.getvalue())
     if e:
         st.error(f"Cerebro: {e}")
+    elif st_df is not None:
+        cere_df, st_matched = attach_ads(cere_df, st_df)
 if xray_file is not None:
     xray_df, e = load_xray(xray_file.getvalue())
     if e:
         st.error(f"X-Ray: {e}")
 
+if st_df is not None and cere_df is not None:
+    pct = st_matched / max(len(cere_df), 1) * 100
+    st.markdown(f'<div class="note">💰 Search-term report merged: <b>{st_matched}</b> of '
+                f'{len(cere_df):,} Cerebro keywords ({pct:.0f}%) have exact ad-performance data. '
+                f'The rest are search terms your ads reached that Cerebro does not track, or '
+                f'keywords with no ad activity — their ad columns stay blank.</div>',
+                unsafe_allow_html=True)
+elif st_df is not None:
+    st.markdown(f'<div class="note">Search-term report loaded ({len(st_df):,} terms). Upload a '
+                f'Cerebro export to see spend, ad sales and ACOS beside each keyword.</div>',
+                unsafe_allow_html=True)
+
 CERE_COLS = {"keyword": "Keyword", "volume": "Volume", "organic": "Organic Rank",
              "sponsored": "Sponsored Rank", "priority": "Priority", "sales": "Kw Sales",
-             "title_density": "Title Density", "competing": "Competing", "trend": "Trend %",
-             "bid": "Sugg. Bid $"}
+             "trend": "Trend %", "competing": "Competing",
+             "spend": "Ad Spend $", "ad_sales": "Ad Sales $", "acos": "ACOS %"}
 
 
 def cere_view(d, key, note):
@@ -303,10 +380,19 @@ def cere_view(d, key, note):
     with b:
         st.download_button("Download (.csv)", d.to_csv(index=False).encode("utf-8"),
                            f"keywords_{key}.csv", "text/csv", key=f"dl{key}")
+    if "spend" in d.columns and d["spend"].notna().any():
+        sp = d["spend"].fillna(0).sum(); asl = d["ad_sales"].fillna(0).sum()
+        ac = (sp / asl * 100) if asl else 0
+        n_ads = int(d["spend"].notna().sum())
+        st.caption(f"💰 Ad data on **{n_ads}** of these keywords · spend **${sp:,.0f}** · "
+                   f"ad sales **${asl:,.0f}** · ACOS **{ac:.0f}%**")
     cols = [c for c in CERE_COLS if c in d.columns]
+    cfg = {"Keyword": st.column_config.TextColumn(width="large"),
+           "Ad Spend $": st.column_config.NumberColumn(format="$%.2f"),
+           "Ad Sales $": st.column_config.NumberColumn(format="$%.2f"),
+           "ACOS %": st.column_config.NumberColumn(format="%.0f%%")}
     st.dataframe(d[cols].rename(columns=CERE_COLS), use_container_width=True, height=440,
-                 hide_index=True,
-                 column_config={"Keyword": st.column_config.TextColumn(width="large")})
+                 hide_index=True, column_config=cfg)
     st.caption("Click any cell and press ⌘/Ctrl-C to copy a single keyword.")
 
 
@@ -346,6 +432,19 @@ if cere_df is not None:
                                 help="Filters every ranking tab by market sales for the keyword. "
                                      "Keywords with no sales data are treated as zero.") \
             if smax > 0 else 0
+        has_ads = "spend" in df.columns and df["spend"].notna().any()
+        if has_ads:
+            sb.markdown("---")
+            sb.caption("**Ad performance** (from the search-term report)")
+            f_ads_only = sb.checkbox("Only keywords with ad data", key="kf_ao")
+            amax = int(df["acos"].fillna(0).replace([float("inf")], 0).max() or 100)
+            f_acos = sb.slider("ACOS range %", 0, max(amax, 100), (0, max(amax, 100)), key="kf_ac")
+            f_acos_on = sb.checkbox("Apply ACOS range", key="kf_acon",
+                                    help="ACOS only exists for keywords with ad sales, so this "
+                                         "also hides keywords without ad data.")
+        else:
+            f_ads_only = f_acos_on = False
+            f_acos = (0, 100)
         tmin, tmax = -100, int(df["trend"].fillna(0).max() or 100)
         f_trend = sb.slider("Search-volume trend %", tmin, tmax, (tmin, tmax), key="kf_tr")
         f_rising = sb.checkbox("Only rising keywords (trend > 0)", value=False, key="kf_ris")
@@ -381,6 +480,10 @@ if cere_df is not None:
                 d = d[~d["keyword"].str.lower().apply(lambda k: any(t in k for t in xs))]
             if f_nobrand:
                 d = d[~brand_flag(d["keyword"], xs)]
+            if f_ads_only and "spend" in d.columns:
+                d = d[d["spend"].notna()]
+            if f_acos_on and "acos" in d.columns:
+                d = d[d["acos"].between(*f_acos)]
             return d
 
         t = st.tabs(["📊 Dashboard", "All keywords", "Low competition", "High volume",
