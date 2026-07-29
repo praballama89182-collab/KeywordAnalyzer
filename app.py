@@ -164,6 +164,28 @@ def panel_end():
 
 
 # ================================================================= loaders
+def _read_csv_any(b):
+    """Read bytes to a DataFrame across the encodings and delimiters Helium 10
+    exports use, without raising."""
+    for enc in ("utf-8-sig", "utf-8", "cp1252", "latin-1"):
+        for sep in (",", ";", "\t"):
+            try:
+                df = pd.read_csv(io.BytesIO(b), encoding=enc, sep=sep, dtype=str,
+                                 engine="python", on_bad_lines="skip")
+                if df.shape[1] >= 2:
+                    return df
+            except Exception:
+                continue
+    return None
+
+
+def _clean_headers(df):
+    """Strip BOM, stray quotes and whitespace from column names, so a file saved
+    with a byte-order mark still matches the expected column labels."""
+    df.columns = [str(c).replace("\ufeff", "").strip().strip('"').strip() for c in df.columns]
+    return df
+
+
 CEREBRO_MAP = {
     "Keyword Phrase": "keyword", "Search Volume": "volume", "Search Volume Trend": "trend",
     "Keyword Sales": "sales", "Organic Rank": "organic", "Sponsored Rank": "sponsored",
