@@ -17,19 +17,19 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Helium Audit", page_icon="📊", layout="wide")
 
-# Modern, refined CSS theme with hard-targeted custom slider styles
+# Modern Executive Styling with Custom Royal Blue Sliders
 st.markdown("""<style>
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@600;700&display=swap');
 
-.stApp { background: #fafbfc; }
+.stApp { background: #f8fafc; }
 html, body, [class*="css"] {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    color: #0f1419;
+    color: #0f172a;
     font-size: 14.5px;
 }
 h1, h2, h3, h4 {
     font-family: 'Archivo', sans-serif;
-    color: #0b0f14;
+    color: #0f172a;
     letter-spacing: -.02em;
 }
 .block-container {
@@ -37,16 +37,16 @@ h1, h2, h3, h4 {
     max-width: 1560px;
 }
 
-/* Hero Header */
+/* Hero Banner */
 .hero {
-    background: linear-gradient(115deg, #0d1b2a, #1b2a4a 52%, #3b5bdb);
+    background: linear-gradient(115deg, #0f172a, #1e293b 52%, #2563eb);
     border-radius: 16px;
     padding: 22px 28px;
     margin-bottom: 18px;
-    box-shadow: 0 8px 24px rgba(13, 27, 42, 0.12);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
 }
 .hero h1 { color: #ffffff; font-size: 24px; font-weight: 800; margin: 0; }
-.hero p { color: #c6d0e4; font-size: 13.5px; margin: 6px 0 0; }
+.hero p { color: #cbd5e1; font-size: 13.5px; margin: 6px 0 0; }
 
 /* Metrics & KPIs */
 .kpi {
@@ -60,12 +60,12 @@ h1, h2, h3, h4 {
     font-family: 'JetBrains Mono', monospace;
     font-size: 23px;
     font-weight: 700;
-    color: #3b5bdb;
+    color: #2563eb;
     line-height: 1.1;
 }
 .kpi .l { font-size: 12px; color: #64748b; margin-top: 4px; font-weight: 500; }
 .kpi.accent {
-    background: linear-gradient(135deg, #3b5bdb, #4c6ef5);
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
     border: 0;
 }
 .kpi.accent .n, .kpi.accent .l { color: #ffffff; }
@@ -85,54 +85,51 @@ h1, h2, h3, h4 {
 
 /* Banners & Notes */
 .note {
-    background: #f0f4ff;
-    border: 1px solid #d0dcfd;
-    border-left: 4px solid #3b5bdb;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-left: 4px solid #2563eb;
     border-radius: 10px;
     padding: 12px 16px;
     font-size: 13.5px;
-    color: #1e293b;
+    color: #1e3a8a;
     margin: 10px 0 16px;
 }
 
-/* Hard Target High-End Streamlit Sliders */
+/* Professional Custom Sliders */
 div[data-testid="stSlider"] {
-    padding-top: 6px;
-    padding-bottom: 12px;
+    padding-top: 4px;
+    padding-bottom: 10px;
 }
-div[data-testid="stSlider"] [data-baseweb="slider"] {
-    margin-top: 4px;
-}
-/* Active Track Highlight Color */
+/* Active Track Highlight */
 div[data-testid="stSlider"] [data-baseweb="slider"] > div > div {
-    background-color: #3b5bdb !important;
+    background-color: #2563eb !important;
 }
 /* Inactive Track Background */
 div[data-testid="stSlider"] [data-baseweb="slider"] > div {
-    background-color: #e2e8f0 !important;
+    background-color: #cbd5e1 !important;
     height: 6px !important;
     border-radius: 4px !important;
 }
 /* Thumb Handle Styling */
 div[data-testid="stSlider"] [role="slider"],
 div[data-testid="stSlider"] [data-baseweb="thumb"] {
-    height: 20px !important;
-    width: 20px !important;
+    height: 18px !important;
+    width: 18px !important;
     border-radius: 50% !important;
     background-color: #ffffff !important;
-    border: 3px solid #3b5bdb !important;
-    box-shadow: 0 2px 8px rgba(59, 91, 219, 0.35) !important;
+    border: 3px solid #2563eb !important;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3) !important;
     cursor: pointer !important;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: transform 0.15s ease, box-shadow 0.15s ease !important;
 }
 div[data-testid="stSlider"] [role="slider"]:hover,
 div[data-testid="stSlider"] [data-baseweb="thumb"]:hover {
     transform: scale(1.25) !important;
-    background-color: #3b5bdb !important;
+    background-color: #2563eb !important;
     border-color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(59, 91, 219, 0.5) !important;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.5) !important;
 }
-/* Value Callout Labels */
+/* Slider Label Formatting */
 div[data-testid="stSlider"] [data-testid="stWidgetLabel"] {
     font-weight: 600 !important;
     color: #1e293b !important;
@@ -141,7 +138,7 @@ div[data-testid="stSlider"] [data-testid="stWidgetLabel"] {
 
 /* Buttons & Components */
 div.stButton>button[kind="primary"] {
-    background: #3b5bdb;
+    background: #2563eb;
     border: 0;
     font-weight: 700;
     border-radius: 8px;
@@ -168,7 +165,7 @@ def copy_all(keywords, key, label="Copy all"):
     text = "\n".join(str(k) for k in keywords)
     payload = text.replace("\\", "\\\\").replace("`", "\\`").replace("$", "\\$")
     components.html(f"""
-      <button id="c{key}" style="background:#3b5bdb;color:#fff;border:0;border-radius:8px;
+      <button id="c{key}" style="background:#2563eb;color:#fff;border:0;border-radius:8px;
         padding:9px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">
         {label} ({len(keywords)})</button>
       <script>
@@ -179,7 +176,7 @@ def copy_all(keywords, key, label="Copy all"):
             a.style.opacity='0';document.body.appendChild(a);a.select();
             document.execCommand('copy');document.body.removeChild(a);}}
           b.textContent='Copied {len(keywords)}';b.style.background='#22c55e';
-          setTimeout(()=>{{b.textContent='{label} ({len(keywords)})';b.style.background='#3b5bdb';}},1500);}};
+          setTimeout(()=>{{b.textContent='{label} ({len(keywords)})';b.style.background='#2563eb';}},1500);}};
       </script>""", height=46)
 
 
@@ -201,18 +198,40 @@ def rng(df, col, default_lo=None, default_hi=None):
 
 
 # ----------------------------------------------------------------- keyword logic
-COMPETITOR_BRAND_HINTS = [
+KNOWN_COMPETITOR_BRANDS = [
     "nordic naturals", "grizzly", "zesty paws", "vital pet", "vital planet", "natural dog",
     "coco and luna", "hofseth", "pupper", "finn", "native pet", "petlab", "wild alaskan",
     "amazon brand", "wag", "furrific", "vetriscience", "nutramax", "life on the line",
-    "heart eyes", "fur oil", "lifelines", "purina", "blue buffalo", "iams",
+    "heart eyes", "fur oil", "lifelines", "purina", "blue buffalo", "iams", "hape", "melissa"
 ]
 
+# Standard descriptive English terms that must NOT be treated as brand names
+NON_BRAND_WORDS = {
+    "tall", "small", "large", "big", "easel", "oil", "fish", "dog", "cat", "pet", "wood",
+    "wooden", "toy", "toys", "set", "kit", "paint", "paper", "stand", "desk", "board",
+    "brush", "canvas", "box", "rack", "tray", "table", "chair", "frame", "holder",
+    "mat", "pack", "mini", "giant", "portable", "natural", "organic", "pure", "salmon"
+}
+
 def brand_flag(series, extra=None):
-    """Boolean mask: keyword contains a known competitor brand token."""
-    hints = COMPETITOR_BRAND_HINTS + [b.strip().lower() for b in (extra or []) if b.strip()]
-    pat = "|".join(re.escape(h) for h in hints)
-    return series.str.lower().str.contains(pat, na=False)
+    """
+    Boolean mask: Detects competitor brand keywords.
+    Excludes standard generic terms (e.g. 'easel', 'tall', 'fish', 'oil') from being flagged.
+    """
+    hints = KNOWN_COMPETITOR_BRANDS + [b.strip().lower() for b in (extra or []) if b.strip()]
+    
+    def is_brand_term(kw):
+        tokens = re.findall(r'\b[a-zA-Z0-9]+\b', str(kw).lower())
+        for token in tokens:
+            # Check explicit competitor brand hints
+            if any(hint in str(kw).lower() for hint in hints):
+                return True
+            # Check if token is non-dictionary/distinctive token
+            if token not in NON_BRAND_WORDS and len(token) > 2 and token.istitle():
+                return True
+        return False
+
+    return series.apply(is_brand_term)
 
 
 def priority_score(d):
@@ -221,15 +240,15 @@ def priority_score(d):
 
 
 # ----------------------------------------------------------------- charts
-PALETTE = ["#3b5bdb", "#5b7cfa", "#22b8cf", "#0b9d5b", "#f59f00", "#e8590c", "#e0245e", "#adb5bd"]
-GREEN_RED = {"Page 1 top (1-15)": "#0b9d5b", "Page 1 (16-30)": "#37b24d",
-             "Striking (31-100)": "#f59f00", "Deep (100+)": "#e8590c", "Not ranking": "#adb5bd"}
+PALETTE = ["#2563eb", "#3b82f6", "#06b6d4", "#10b981", "#f59e0b", "#f97316", "#ef4444", "#94a3b8"]
+GREEN_RED = {"Page 1 top (1-15)": "#10b981", "Page 1 (16-30)": "#059669",
+             "Striking (31-100)": "#f59e0b", "Deep (100+)": "#f97316", "Not ranking": "#94a3b8"}
 
 def _layout(fig, h=270, legend=True):
     fig.update_layout(
         height=h, margin=dict(l=8, r=8, t=8, b=8),
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="Inter, sans-serif", size=13, color="#26303c"),
+        font=dict(family="Inter, sans-serif", size=13, color="#1e293b"),
         showlegend=legend,
         legend=dict(orientation="v", x=1.02, y=0.5, font=dict(size=11.5)),
     )
@@ -238,7 +257,7 @@ def _layout(fig, h=270, legend=True):
 def donut(counts, colors=None, order=None):
     if order:
         counts = counts.reindex([o for o in order if o in counts.index])
-    colors = [colors.get(k, "#adb5bd") for k in counts.index] if isinstance(colors, dict) \
+    colors = [colors.get(k, "#94a3b8") for k in counts.index] if isinstance(colors, dict) \
         else (colors or PALETTE)
     fig = go.Figure(go.Pie(
         labels=list(counts.index), values=list(counts.values), hole=.62, sort=False,
@@ -247,10 +266,10 @@ def donut(counts, colors=None, order=None):
         hovertemplate="%{label}<br>%{value} keywords (%{percent})<extra></extra>"))
     total = int(counts.sum())
     fig.add_annotation(text=f"<b>{total:,}</b><br>keywords", showarrow=False,
-                       font=dict(size=15, color="#141a29"))
+                       font=dict(size=15, color="#0f172a"))
     return _layout(fig)
 
-def hbar(labels, values, color="#3b5bdb", fmt="{:,}"):
+def hbar(labels, values, color="#2563eb", fmt="{:,}"):
     fig = go.Figure(go.Bar(
         x=values, y=labels, orientation="h",
         marker=dict(color=color), text=[fmt.format(v) for v in values],
@@ -272,8 +291,8 @@ def scatter_opportunity(d):
                     len=.7, x=1.02), line=dict(width=.5, color="#fff"), opacity=.75),
         text=dd["keyword"],
         hovertemplate="%{text}<br>rank %{x}, vol %{y:,}<extra></extra>"))
-    fig.add_vrect(x0=0, x1=30, fillcolor="#0b9d5b", opacity=.06, line_width=0)
-    fig.add_vrect(x0=31, x1=100, fillcolor="#f59f00", opacity=.06, line_width=0)
+    fig.add_vrect(x0=0, x1=30, fillcolor="#10b981", opacity=.06, line_width=0)
+    fig.add_vrect(x0=31, x1=100, fillcolor="#f59e0b", opacity=.06, line_width=0)
     fig.update_xaxes(title="Organic rank (lower is better)", gridcolor="#eef1f6", range=[0, 160])
     fig.update_yaxes(title="Search volume", gridcolor="#eef1f6", type="log")
     return _layout(fig, h=340, legend=False)
@@ -536,16 +555,17 @@ if cere_df is not None:
                               placeholder="extra competitor brands")
         f_nobrand = sb.checkbox("Hide competitor-brand keywords", value=False, key="kf_nb")
 
-        def base(d):
-            """Master filter logic. Evaluates organic rank & all global sidebar controls globally."""
+        def base(d, apply_rank_filter=True):
+            """Master filter logic. Evaluates global sidebar controls."""
             d = d[d["volume"].fillna(0).between(*f_vol)]
             
-            # Apply organic rank globally
-            if f_rank == "Ranked only": d = d[d["ranks"]]
-            elif f_rank == "Not ranking": d = d[~d["ranks"]]
-            elif f_rank == "Page 1 (1–30)": d = d[d["organic"] <= 30]
-            elif f_rank == "Striking (31–100)": d = d[d["organic"].between(31, 100)]
-            elif f_rank == "Deep/unranked (100+)": d = d[(d["organic"] > 100) | (~d["ranks"])]
+            # Conditionally apply organic rank based on parameters
+            if apply_rank_filter:
+                if f_rank == "Ranked only": d = d[d["ranks"]]
+                elif f_rank == "Not ranking": d = d[~d["ranks"]]
+                elif f_rank == "Page 1 (1–30)": d = d[d["organic"] <= 30]
+                elif f_rank == "Striking (31–100)": d = d[d["organic"].between(31, 100)]
+                elif f_rank == "Deep/unranked (100+)": d = d[(d["organic"] > 100) | (~d["ranks"])]
             
             d = d[d["title_density"].fillna(0) <= f_td]
             d = d[d["competing"].fillna(0) <= f_comp]
@@ -629,7 +649,7 @@ if cere_df is not None:
                             else "3-5 (moderate)" if x <= 5 else "6+ (crowded)")
                 td = dd["title_density"].apply(_td).value_counts().reindex(
                     ["0 (open)", "1-2 (easy)", "3-5 (moderate)", "6+ (crowded)"]).dropna()
-                st.plotly_chart(donut(td, ["#0b9d5b", "#37b24d", "#f59f00", "#e8590c"]),
+                st.plotly_chart(donut(td, ["#10b981", "#059669", "#f59e0b", "#f97316"]),
                                 use_container_width=True, key="d_td")
                 panel_end()
 
@@ -648,7 +668,7 @@ if cere_df is not None:
                 if not gap.empty:
                     st.plotly_chart(
                         hbar(gap["keyword"].str.slice(0, 30).tolist(),
-                             gap["volume"].fillna(0).astype(int).tolist(), "#e8590c"),
+                             gap["volume"].fillna(0).astype(int).tolist(), "#f97316"),
                         use_container_width=True, key="d_gap")
                 else:
                     st.caption("You rank for everything in view.")
@@ -665,7 +685,6 @@ if cere_df is not None:
             cp = b.slider("Max competing", 0, cmax, min(500, cmax), step=50, key="lc_cp")
             vl = c.number_input("Min volume", 0, vmax, min(300, vmax), step=50, key="lc_vl")
             
-            # Reads from base(df) so global Organic Rank filter works here too
             b_df = base(df)
             d = b_df[(b_df["title_density"].fillna(0) <= td) & (b_df["competing"].fillna(0) <= cp)
                    & (b_df["volume"].fillna(0) >= vl)].sort_values(
@@ -727,30 +746,32 @@ if cere_df is not None:
 
         with t[6]:
             st.markdown("#### PPC opportunities")
-            st.markdown('<div class="note">Two paid-search plays the ranking tabs miss: keywords '
-                        'you <b>advertise but do not rank</b> for and '
-                        '<b>competitor-brand</b> terms. Both read from the same export.</div>', unsafe_allow_html=True)
-
-            b_df = base(df)
+            st.markdown('<div class="note">Paid search opportunities derived from your Cerebro export.</div>', unsafe_allow_html=True)
 
             st.markdown("##### 1 · Rank gap — paid but not organic")
-            st.caption("You hold a Sponsored position but no organic rank.")
-            gap = b_df[(b_df["sponsored"].notna()) & (b_df["organic"].isna())].copy()
+            st.caption("Keywords where you hold a Sponsored position but have zero organic rank. "
+                       "(Global Organic Rank sidebar filter is bypassed here so all rank gaps are visible).")
+            
+            # Explicitly bypass global organic rank filter for 'Rank Gap'
+            no_rank_filter_df = base(df, apply_rank_filter=False)
+            gap = no_rank_filter_df[(no_rank_filter_df["sponsored"].notna()) & (no_rank_filter_df["organic"].isna())].copy()
             gap = gap[gap["volume"].fillna(0) >= 100]
             gap = gap.sort_values("volume", ascending=False)
             if gap.empty:
-                st.info("No paid-only keywords match current filters.")
+                st.info("No paid-only keywords match current volume/search criteria.")
             else:
                 cere_view(gap, "gap", "")
 
             st.markdown("---")
             st.markdown("##### 2 · Competitor-brand terms — conquest bidding")
-            st.caption("Terms containing a rival brand.")
+            st.caption("Terms containing brand names (generic descriptive words like 'easel', 'oil', 'tall', etc. are automatically ignored).")
+            
+            b_df = base(df)
             extra = [t_.strip().lower() for t_ in (f_excl or "").splitlines() if t_.strip()]
             conquest = b_df[brand_flag(b_df["keyword"], extra)].copy()
             conquest = conquest[conquest["volume"].fillna(0) >= 100].sort_values("volume", ascending=False)
             if conquest.empty:
-                st.info("No competitor-brand terms found in this set.")
+                st.info("No competitor-brand terms identified.")
             else:
                 cere_view(conquest, "conq", "")
 
