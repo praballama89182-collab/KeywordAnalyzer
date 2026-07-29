@@ -17,35 +17,138 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Helium Audit", page_icon="📊", layout="wide")
 
+# Modern, refined CSS theme with hard-targeted custom slider styles
 st.markdown("""<style>
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@600;700&display=swap');
-.stApp{background:#fff}
-html,body,[class*="css"]{font-family:'Inter',system-ui,sans-serif;color:#0f1419;font-size:15px}
-h1,h2,h3,h4{font-family:'Archivo',sans-serif;color:#0b0f14;letter-spacing:-.015em}
-.block-container{padding-top:1.1rem;max-width:1560px}
-.hero{background:linear-gradient(115deg,#12203a,#243b63 52%,#3b5bdb);border-radius:16px;
- padding:18px 24px;margin-bottom:14px}
-.hero h1{color:#fff;font-size:23px;font-weight:800;margin:0}
-.hero p{color:#c6d0e4;font-size:13px;margin:5px 0 0}
-.kpi{background:#fff;border:1px solid #e7eaf3;border-radius:13px;padding:13px 16px;
- box-shadow:0 3px 12px rgba(20,26,41,.05)}
-.kpi .n{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:#3b5bdb;line-height:1}
-.kpi .l{font-size:12px;color:#6b7391;margin-top:3px}
-.kpi.accent{background:linear-gradient(135deg,#3b5bdb,#5b7cfa);border:0}
-.kpi.accent .n,.kpi.accent .l{color:#fff}
-.kpi .d{font-size:11px;font-weight:600;margin-top:4px}
-.up{color:#0b9d5b}.down{color:#e0245e}
-.panel{background:#fff;border:1px solid #e7eaf3;border-radius:14px;padding:8px 10px 4px;
- box-shadow:0 3px 12px rgba(20,26,41,.05);margin-bottom:12px}
-.panel h4{font-size:14px;margin:8px 6px 2px;color:#141a29}
-.panel .sub{font-size:11.5px;color:#8a92a3;margin:0 6px 4px}
-.leg{font-size:12px;color:#3a4256}
-.note{background:#f4f7fe;border:1px solid #dbe4fb;border-left:5px solid #3b5bdb;border-radius:10px;
- padding:11px 15px;font-size:13.5px;color:#2a3549;margin:8px 0 14px}
-div.stButton>button[kind="primary"]{background:#3b5bdb;border:0;font-weight:700;border-radius:8px}
-.stDownloadButton>button{border-radius:8px;font-weight:600;width:100%}
-[data-baseweb="tab"]{font-family:'Archivo',sans-serif;font-weight:700;font-size:15px}
-.stDataFrame{border:1px solid #e7eaf3;border-radius:10px}
+
+.stApp { background: #fafbfc; }
+html, body, [class*="css"] {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #0f1419;
+    font-size: 14.5px;
+}
+h1, h2, h3, h4 {
+    font-family: 'Archivo', sans-serif;
+    color: #0b0f14;
+    letter-spacing: -.02em;
+}
+.block-container {
+    padding-top: 1.1rem;
+    max-width: 1560px;
+}
+
+/* Hero Header */
+.hero {
+    background: linear-gradient(115deg, #0d1b2a, #1b2a4a 52%, #3b5bdb);
+    border-radius: 16px;
+    padding: 22px 28px;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 24px rgba(13, 27, 42, 0.12);
+}
+.hero h1 { color: #ffffff; font-size: 24px; font-weight: 800; margin: 0; }
+.hero p { color: #c6d0e4; font-size: 13.5px; margin: 6px 0 0; }
+
+/* Metrics & KPIs */
+.kpi {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+.kpi .n {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 23px;
+    font-weight: 700;
+    color: #3b5bdb;
+    line-height: 1.1;
+}
+.kpi .l { font-size: 12px; color: #64748b; margin-top: 4px; font-weight: 500; }
+.kpi.accent {
+    background: linear-gradient(135deg, #3b5bdb, #4c6ef5);
+    border: 0;
+}
+.kpi.accent .n, .kpi.accent .l { color: #ffffff; }
+.kpi .d { font-size: 11px; font-weight: 600; margin-top: 5px; opacity: 0.9; }
+
+/* Panels & Cards */
+.panel {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 12px 14px 6px;
+    box-shadow: 0 3px 12px rgba(15, 23, 42, 0.03);
+    margin-bottom: 14px;
+}
+.panel h4 { font-size: 14.5px; margin: 4px 4px 2px; color: #0f172a; font-weight: 700; }
+.panel .sub { font-size: 11.5px; color: #64748b; margin: 0 4px 6px; }
+
+/* Banners & Notes */
+.note {
+    background: #f0f4ff;
+    border: 1px solid #d0dcfd;
+    border-left: 4px solid #3b5bdb;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13.5px;
+    color: #1e293b;
+    margin: 10px 0 16px;
+}
+
+/* Hard Target High-End Streamlit Sliders */
+div[data-testid="stSlider"] {
+    padding-top: 6px;
+    padding-bottom: 12px;
+}
+div[data-testid="stSlider"] [data-baseweb="slider"] {
+    margin-top: 4px;
+}
+/* Active Track Highlight Color */
+div[data-testid="stSlider"] [data-baseweb="slider"] > div > div {
+    background-color: #3b5bdb !important;
+}
+/* Inactive Track Background */
+div[data-testid="stSlider"] [data-baseweb="slider"] > div {
+    background-color: #e2e8f0 !important;
+    height: 6px !important;
+    border-radius: 4px !important;
+}
+/* Thumb Handle Styling */
+div[data-testid="stSlider"] [role="slider"],
+div[data-testid="stSlider"] [data-baseweb="thumb"] {
+    height: 20px !important;
+    width: 20px !important;
+    border-radius: 50% !important;
+    background-color: #ffffff !important;
+    border: 3px solid #3b5bdb !important;
+    box-shadow: 0 2px 8px rgba(59, 91, 219, 0.35) !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+div[data-testid="stSlider"] [role="slider"]:hover,
+div[data-testid="stSlider"] [data-baseweb="thumb"]:hover {
+    transform: scale(1.25) !important;
+    background-color: #3b5bdb !important;
+    border-color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(59, 91, 219, 0.5) !important;
+}
+/* Value Callout Labels */
+div[data-testid="stSlider"] [data-testid="stWidgetLabel"] {
+    font-weight: 600 !important;
+    color: #1e293b !important;
+    font-size: 13px !important;
+}
+
+/* Buttons & Components */
+div.stButton>button[kind="primary"] {
+    background: #3b5bdb;
+    border: 0;
+    font-weight: 700;
+    border-radius: 8px;
+}
+.stDownloadButton>button { border-radius: 8px; font-weight: 600; width: 100%; }
+[data-baseweb="tab"] { font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 14.5px; }
+.stDataFrame { border: 1px solid #e2e8f0; border-radius: 10px; }
 </style>""", unsafe_allow_html=True)
 
 st.markdown('<div class="hero"><h1>📊 Helium Audit</h1><p>Helium 10 Cerebro keyword '
@@ -113,8 +216,7 @@ def brand_flag(series, extra=None):
 
 
 def priority_score(d):
-    """Volume per rank position: how much traffic a small rank gain unlocks.
-    A keyword at rank 36 with 50k volume beats one at rank 40 with 8k."""
+    """Volume per rank position: how much traffic a small rank gain unlocks."""
     return (d["volume"].fillna(0) / d["organic"].clip(lower=1)).round(0)
 
 
@@ -159,8 +261,7 @@ def hbar(labels, values, color="#3b5bdb", fmt="{:,}"):
     return _layout(fig, h=max(150, 30 * len(labels) + 40), legend=False)
 
 def scatter_opportunity(d):
-    """Volume vs organic rank; colour = title density, so the sweet spot is
-    high volume, high rank number (poor rank) and low density — top-left, cool."""
+    """Volume vs organic rank."""
     dd = d[d["ranks"] & d["volume"].notna()].copy()
     if dd.empty:
         return None
@@ -187,8 +288,6 @@ def panel_end():
 
 # ================================================================= loaders
 def _read_csv_any(b):
-    """Read bytes to a DataFrame across the encodings and delimiters Helium 10
-    exports use, without raising."""
     for enc in ("utf-8-sig", "utf-8", "cp1252", "latin-1"):
         for sep in (",", ";", "\t"):
             try:
@@ -202,8 +301,6 @@ def _read_csv_any(b):
 
 
 def _clean_headers(df):
-    """Strip BOM, stray quotes and whitespace from column names, so a file saved
-    with a byte-order mark still matches the expected column labels."""
     df.columns = [str(c).replace("\ufeff", "").strip().strip('"').strip() for c in df.columns]
     return df
 
@@ -227,25 +324,15 @@ XRAY_NUM = ["price", "sales", "parent_sales", "orders", "revenue", "bsr", "ratin
             "reviews", "sellers"]
 
 
-ST_SPEND = "Spend"
-ST_SALES = "7 Day Total Sales "
-ST_TERM = "Customer Search Term"
-
-
 @st.cache_data(show_spinner=False)
 def load_search_terms(b):
-    """Aggregate an Amazon Sponsored Products search-term report to one row per
-    term: spend, ad sales, ACOS, clicks, orders. Reads .xlsx or .csv."""
-    name_xlsx = True
     try:
         df = pd.read_excel(io.BytesIO(b))
     except Exception:
         df = _read_csv_any(b)
-        name_xlsx = False
     if df is None:
         return None, "Could not read the search-term report."
     df = _clean_headers(df)
-    # tolerate the trailing space Amazon puts on some headers
     cols = {c.strip(): c for c in df.columns}
     term = cols.get("Customer Search Term")
     spend = cols.get("Spend")
@@ -285,7 +372,6 @@ def load_cerebro(b):
 
 
 def attach_ads(cere, st_df):
-    """Left-join aggregated ad metrics onto the Cerebro keywords by exact term."""
     if st_df is None:
         for c in ["spend", "ad_sales", "acos", "clicks", "ad_orders"]:
             cere[c] = pd.NA
@@ -366,7 +452,8 @@ CERE_COLS = {"keyword": "Keyword", "volume": "Volume", "organic": "Organic Rank"
 
 
 def cere_view(d, key, note):
-    st.markdown(f'<div class="note">{note}</div>', unsafe_allow_html=True)
+    if note:
+        st.markdown(f'<div class="note">{note}</div>', unsafe_allow_html=True)
     if d.empty:
         st.warning("No keywords match. Loosen the filters.")
         return
@@ -416,32 +503,28 @@ if cere_df is not None:
 
         sb = st.sidebar
         sb.header("Keyword filters")
-        sb.caption("Apply to the **All keywords** tab. Each preset below has its own on top.")
+        sb.caption("Apply to **ALL** Cerebro keyword tabs below.")
         f_vol = sb.slider("Search volume", 0, vmax, (100, vmax), step=50, key="kf_vol")
         f_rank = sb.selectbox("Organic rank", ["Any", "Ranked only", "Not ranking",
-                              "Page 1 (1–30)", "Striking (31–100)", "Deep/unranked (100+)"],
-                              key="kf_rank")
+                                      "Page 1 (1–30)", "Striking (31–100)", "Deep/unranked (100+)"],
+                                      key="kf_rank")
         f_td = sb.slider("Max title density", 0, tdmax, tdmax, key="kf_td")
         f_comp = sb.slider("Max competing products", 0, cmax, cmax, step=50, key="kf_comp")
         f_has = sb.checkbox("Only with tracked sales", key="kf_has")
         f_nozero = sb.checkbox("Hide keywords with zero sales", value=False, key="kf_nz",
-                               help="Drops keywords with no recorded Keyword Sales. Note only "
-                                    "keywords Cerebro tracked sales for will remain.")
+                               help="Drops keywords with no recorded Keyword Sales.")
         smax = int(df["sales"].fillna(0).max() or 0)
         f_sales_min = sb.slider("Min keyword sales", 0, max(smax, 1), 0, key="kf_smin",
-                                help="Filters every ranking tab by market sales for the keyword. "
-                                     "Keywords with no sales data are treated as zero.") \
+                                help="Filters every ranking tab by market sales for the keyword.") \
             if smax > 0 else 0
         has_ads = "spend" in df.columns and df["spend"].notna().any()
         if has_ads:
             sb.markdown("---")
-            sb.caption("**Ad performance** (from the search-term report)")
+            sb.caption("**Ad performance** (from search-term report)")
             f_ads_only = sb.checkbox("Only keywords with ad data", key="kf_ao")
             amax = int(df["acos"].fillna(0).replace([float("inf")], 0).max() or 100)
             f_acos = sb.slider("ACOS range %", 0, max(amax, 100), (0, max(amax, 100)), key="kf_ac")
-            f_acos_on = sb.checkbox("Apply ACOS range", key="kf_acon",
-                                    help="ACOS only exists for keywords with ad sales, so this "
-                                         "also hides keywords without ad data.")
+            f_acos_on = sb.checkbox("Apply ACOS range", key="kf_acon")
         else:
             f_ads_only = f_acos_on = False
             f_acos = (0, 100)
@@ -451,18 +534,19 @@ if cere_df is not None:
         f_has_kw = sb.text_input("Contains", placeholder="salmon, dogs", key="kf_c")
         f_excl = sb.text_area("Exclude (one per line)", height=70, key="kf_x",
                               placeholder="extra competitor brands")
-        f_nobrand = sb.checkbox("Hide competitor-brand keywords", value=False, key="kf_nb",
-                                help="Terms containing a rival brand — you can't rank these "
-                                     "organically, only bid on them. On by default in the "
-                                     "ranking tabs.")
+        f_nobrand = sb.checkbox("Hide competitor-brand keywords", value=False, key="kf_nb")
 
         def base(d):
+            """Master filter logic. Evaluates organic rank & all global sidebar controls globally."""
             d = d[d["volume"].fillna(0).between(*f_vol)]
+            
+            # Apply organic rank globally
             if f_rank == "Ranked only": d = d[d["ranks"]]
             elif f_rank == "Not ranking": d = d[~d["ranks"]]
             elif f_rank == "Page 1 (1–30)": d = d[d["organic"] <= 30]
             elif f_rank == "Striking (31–100)": d = d[d["organic"].between(31, 100)]
             elif f_rank == "Deep/unranked (100+)": d = d[(d["organic"] > 100) | (~d["ranks"])]
+            
             d = d[d["title_density"].fillna(0) <= f_td]
             d = d[d["competing"].fillna(0) <= f_comp]
             if f_has: d = d[d["sales"].fillna(0) > 0]
@@ -573,29 +657,36 @@ if cere_df is not None:
         with t[1]:
             cere_view(base(df).sort_values("volume", ascending=False), "all",
                       "Everything passing the sidebar filters, by volume. Your working set.")
+
         with t[2]:
             st.markdown("#### Low-competition keywords")
             a, b, c = st.columns(3)
             td = a.slider("Max title density", 0, tdmax, min(1, tdmax), key="lc_td")
             cp = b.slider("Max competing", 0, cmax, min(500, cmax), step=50, key="lc_cp")
             vl = c.number_input("Min volume", 0, vmax, min(300, vmax), step=50, key="lc_vl")
-            d = df[(df["title_density"].fillna(0) <= td) & (df["competing"].fillna(0) <= cp)
-                   & (df["volume"].fillna(0) >= vl)].sort_values(
+            
+            # Reads from base(df) so global Organic Rank filter works here too
+            b_df = base(df)
+            d = b_df[(b_df["title_density"].fillna(0) <= td) & (b_df["competing"].fillna(0) <= cp)
+                   & (b_df["volume"].fillna(0) >= vl)].sort_values(
                    ["title_density", "volume"], ascending=[True, False])
             cere_view(d, "low", "Low title density plus few competitors means few sellers own the "
-                      "keyword in their title — the easiest to rank cold. Send to backend terms and "
-                      "new PPC.")
+                      "keyword in their title — the easiest to rank cold.")
+
         with t[3]:
             st.markdown("#### High-volume keywords")
             a, b = st.columns(2)
             vl = a.number_input("Min volume", 0, vmax, min(1000, vmax), step=100, key="hv_vl")
-            rk = b.selectbox("Rank", ["Any", "Only where you rank", "Only where you don't"], key="hv_rk")
-            d = df[df["volume"].fillna(0) >= vl]
+            rk = b.selectbox("Rank (Tab-specific)", ["Any", "Only where you rank", "Only where you don't"], key="hv_rk")
+            
+            d = base(df)
+            d = d[d["volume"].fillna(0) >= vl]
             if rk == "Only where you rank": d = d[d["ranks"]]
             elif rk == "Only where you don't": d = d[~d["ranks"]]
             cere_view(d.sort_values("volume", ascending=False), "vol",
                       "Biggest traffic terms. Defend where you rank; decide winnable-vs-brand where "
                       "you don't.")
+
         with t[4]:
             st.markdown("#### High-sales keywords")
             if df["sales"].notna().sum() == 0:
@@ -606,10 +697,13 @@ if cere_df is not None:
                 sl = a.number_input("Min keyword sales", 0, max(smax, 1), min(50, smax),
                                     step=10, key="hs_sl")
                 vl = b.number_input("Min volume", 0, vmax, 0, step=50, key="hs_vl")
-                d = df[(df["sales"].fillna(0) >= sl) & (df["volume"].fillna(0) >= vl)]
+                
+                b_df = base(df)
+                d = b_df[(b_df["sales"].fillna(0) >= sl) & (b_df["volume"].fillna(0) >= vl)]
                 cere_view(d.sort_values("sales", ascending=False), "sales",
                           "Keywords driving the most units market-wide. These convert — put them in "
                           "the title, top bullets and core PPC.")
+
         with t[5]:
             st.markdown("#### Striking distance")
             a, b, c, e = st.columns(4)
@@ -618,9 +712,9 @@ if cere_df is not None:
             vl = c.number_input("Min volume", 0, vmax, min(300, vmax), step=50, key="sd_vl")
             sort_by = e.selectbox("Sort by", ["Priority (volume ÷ rank)", "Volume", "Rank"],
                                   key="sd_sort")
-            d = df[df["organic"].between(lo, hi) & (df["volume"].fillna(0) >= vl)].copy()
-            if f_nobrand:
-                d = d[~brand_flag(d["keyword"])]
+            
+            b_df = base(df)
+            d = b_df[b_df["organic"].between(lo, hi) & (b_df["volume"].fillna(0) >= vl)].copy()
             d["priority"] = priority_score(d)
             if sort_by.startswith("Priority"):
                 d = d.sort_values("priority", ascending=False)
@@ -629,66 +723,57 @@ if cere_df is not None:
             else:
                 d = d.sort_values("organic")
             cere_view(d, "strike", "Already ranking, just off page 1. Sorted by <b>priority</b> — "
-                      "volume divided by rank position — so the keyword where a small rank gain "
-                      "unlocks the most traffic sits first. Usually the highest-ROI work in the export.")
+                      "volume divided by rank position.")
 
         with t[6]:
             st.markdown("#### PPC opportunities")
             st.markdown('<div class="note">Two paid-search plays the ranking tabs miss: keywords '
-                        'you <b>advertise but do not rank</b> for (earn what you rent) and '
-                        '<b>competitor-brand</b> terms (conquest bidding). Both read from the same '
-                        'export.</div>', unsafe_allow_html=True)
+                        'you <b>advertise but do not rank</b> for and '
+                        '<b>competitor-brand</b> terms. Both read from the same export.</div>', unsafe_allow_html=True)
+
+            b_df = base(df)
 
             st.markdown("##### 1 · Rank gap — paid but not organic")
-            st.caption("You hold a Sponsored position but no organic rank. PPC is carrying traffic "
-                       "your listing could earn. Feed these into the title and backend terms, then "
-                       "push to convert the paid rank into an organic one.")
-            gap = df[(df["sponsored"].notna()) & (df["organic"].isna())].copy()
+            st.caption("You hold a Sponsored position but no organic rank.")
+            gap = b_df[(b_df["sponsored"].notna()) & (b_df["organic"].isna())].copy()
             gap = gap[gap["volume"].fillna(0) >= 100]
-            gap = gap[~brand_flag(gap["keyword"])]
             gap = gap.sort_values("volume", ascending=False)
             if gap.empty:
-                st.info("No paid-only keywords above 100 volume — your organic coverage is strong.")
+                st.info("No paid-only keywords match current filters.")
             else:
                 cere_view(gap, "gap", "")
 
             st.markdown("---")
             st.markdown("##### 2 · Competitor-brand terms — conquest bidding")
-            st.caption("Terms containing a rival brand. You cannot rank these organically, but "
-                       "bidding on them puts you in front of shoppers already looking at a "
-                       "competitor. Add your own brands to the exclude box if any are yours.")
+            st.caption("Terms containing a rival brand.")
             extra = [t_.strip().lower() for t_ in (f_excl or "").splitlines() if t_.strip()]
-            conquest = df[brand_flag(df["keyword"], extra)].copy()
+            conquest = b_df[brand_flag(b_df["keyword"], extra)].copy()
             conquest = conquest[conquest["volume"].fillna(0) >= 100].sort_values("volume", ascending=False)
             if conquest.empty:
-                st.info("No competitor-brand terms found in this export.")
+                st.info("No competitor-brand terms found in this set.")
             else:
                 cere_view(conquest, "conq", "")
 
             st.markdown("---")
             st.markdown("##### 3 · Undefended winners — organic top-30, no ad")
-            st.caption("You rank on page 1 organically but run no Sponsored ad, so a competitor can "
-                       "bid above your listing and take the click. Cheap to defend.")
-            undef = df[(df["organic"] <= 30) & (df["sponsored"].isna())].copy()
+            st.caption("You rank on page 1 organically but run no Sponsored ad.")
+            undef = b_df[(b_df["organic"] <= 30) & (b_df["sponsored"].isna())].copy()
             undef = undef.sort_values("volume", ascending=False)
             if undef.empty:
-                st.info("Every page-1 keyword already has a Sponsored position.")
+                st.info("Every page-1 keyword already has a Sponsored position in this set.")
             else:
                 cere_view(undef, "undef", "")
 
             st.markdown("---")
             st.markdown("##### 4 · Organic but not paid — every rank, no ad")
-            st.caption("You rank organically at any depth but run no Sponsored ad. The top-30 slice "
-                       "above is the urgent part; this fuller list is your backlog of keywords you "
-                       "could amplify with PPC to lift borderline ranks onto page 1.")
             oc1, oc2 = st.columns(2)
             onp_vol = oc1.number_input("Min volume", 0, vmax, min(300, vmax), step=50, key="onp_vol")
             onp_rank = oc2.number_input("Worst rank to include", 1, 306, 100, key="onp_rank")
-            onp = df[(df["organic"].notna()) & (df["organic"] <= onp_rank) &
-                     (df["sponsored"].isna()) & (df["volume"].fillna(0) >= onp_vol)].copy()
-            onp = onp[~brand_flag(onp["keyword"])].sort_values("volume", ascending=False)
+            onp = b_df[(b_df["organic"].notna()) & (b_df["organic"] <= onp_rank) &
+                     (b_df["sponsored"].isna()) & (b_df["volume"].fillna(0) >= onp_vol)].copy()
+            onp = onp.sort_values("volume", ascending=False)
             if onp.empty:
-                st.info("No organic-only keywords match — you advertise most of what you rank for.")
+                st.info("No organic-only keywords match current criteria.")
             else:
                 cere_view(onp, "onp", "")
 
