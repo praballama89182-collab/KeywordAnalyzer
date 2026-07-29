@@ -338,6 +338,17 @@ if cere_df is not None:
         f_td = sb.slider("Max title density", 0, tdmax, tdmax, key="kf_td")
         f_comp = sb.slider("Max competing products", 0, cmax, cmax, step=50, key="kf_comp")
         f_has = sb.checkbox("Only with tracked sales", key="kf_has")
+        f_nozero = sb.checkbox("Hide keywords with zero sales", value=False, key="kf_nz",
+                               help="Drops keywords with no recorded Keyword Sales. Note only "
+                                    "keywords Cerebro tracked sales for will remain.")
+        smax = int(df["sales"].fillna(0).max() or 0)
+        f_sales_min = sb.slider("Min keyword sales", 0, max(smax, 1), 0, key="kf_smin",
+                                help="Filters every ranking tab by market sales for the keyword. "
+                                     "Keywords with no sales data are treated as zero.") \
+            if smax > 0 else 0
+        tmin, tmax = -100, int(df["trend"].fillna(0).max() or 100)
+        f_trend = sb.slider("Search-volume trend %", tmin, tmax, (tmin, tmax), key="kf_tr")
+        f_rising = sb.checkbox("Only rising keywords (trend > 0)", value=False, key="kf_ris")
         f_has_kw = sb.text_input("Contains", placeholder="salmon, dogs", key="kf_c")
         f_excl = sb.text_area("Exclude (one per line)", height=70, key="kf_x",
                               placeholder="extra competitor brands")
@@ -356,6 +367,12 @@ if cere_df is not None:
             d = d[d["title_density"].fillna(0) <= f_td]
             d = d[d["competing"].fillna(0) <= f_comp]
             if f_has: d = d[d["sales"].fillna(0) > 0]
+            if f_nozero: d = d[d["sales"].fillna(0) > 0]
+            if f_sales_min: d = d[d["sales"].fillna(0) >= f_sales_min]
+            if f_rising:
+                d = d[d["trend"].fillna(0) > 0]
+            else:
+                d = d[d["trend"].fillna(0).between(*f_trend)]
             if f_has_kw.strip():
                 ts = [t.strip().lower() for t in f_has_kw.split(",") if t.strip()]
                 d = d[d["keyword"].str.lower().apply(lambda k: any(t in k for t in ts))]
@@ -555,6 +572,22 @@ if cere_df is not None:
                 st.info("Every page-1 keyword already has a Sponsored position.")
             else:
                 cere_view(undef, "undef", "")
+
+            st.markdown("---")
+            st.markdown("##### 4 · Organic but not paid — every rank, no ad")
+            st.caption("You rank organically at any depth but run no Sponsored ad. The top-30 slice "
+                       "above is the urgent part; this fuller list is your backlog of keywords you "
+                       "could amplify with PPC to lift borderline ranks onto page 1.")
+            oc1, oc2 = st.columns(2)
+            onp_vol = oc1.number_input("Min volume", 0, vmax, min(300, vmax), step=50, key="onp_vol")
+            onp_rank = oc2.number_input("Worst rank to include", 1, 306, 100, key="onp_rank")
+            onp = df[(df["organic"].notna()) & (df["organic"] <= onp_rank) &
+                     (df["sponsored"].isna()) & (df["volume"].fillna(0) >= onp_vol)].copy()
+            onp = onp[~brand_flag(onp["keyword"])].sort_values("volume", ascending=False)
+            if onp.empty:
+                st.info("No organic-only keywords match — you advertise most of what you rank for.")
+            else:
+                cere_view(onp, "onp", "")
 
 
 # ----------------------------------------------------------------- X-RAY
