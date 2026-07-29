@@ -1,5 +1,5 @@
 """
-Listing Intelligence — Helium 10 Cerebro + X-Ray analyzer.
+Helium Audit — Helium 10 Cerebro + X-Ray analyzer.
 
 Two uploads:
   • Cerebro CSV  -> keyword buckets (low competition, high volume, high sales,
@@ -9,12 +9,13 @@ Two uploads:
 Each report renders in its own tab; either can be used on its own.
 """
 import io
+import re
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Listing Intelligence", page_icon="📊", layout="wide")
+st.set_page_config(page_title="Helium Audit", page_icon="📊", layout="wide")
 
 st.markdown("""<style>
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@600;700&display=swap');
@@ -47,7 +48,7 @@ div.stButton>button[kind="primary"]{background:#3b5bdb;border:0;font-weight:700;
 .stDataFrame{border:1px solid #e7eaf3;border-radius:10px}
 </style>""", unsafe_allow_html=True)
 
-st.markdown('<div class="hero"><h1>📊 Listing Intelligence</h1><p>Helium 10 Cerebro keyword '
+st.markdown('<div class="hero"><h1>📊 Helium Audit</h1><p>Helium 10 Cerebro keyword '
             'analysis and X-Ray competitor analysis in one place. Upload either report, or both.</p>'
             '</div>', unsafe_allow_html=True)
 
@@ -94,6 +95,27 @@ def rng(df, col, default_lo=None, default_hi=None):
     if lo == hi:
         hi = lo + 1
     return lo, hi
+
+
+# ----------------------------------------------------------------- keyword logic
+COMPETITOR_BRAND_HINTS = [
+    "nordic naturals", "grizzly", "zesty paws", "vital pet", "vital planet", "natural dog",
+    "coco and luna", "hofseth", "pupper", "finn", "native pet", "petlab", "wild alaskan",
+    "amazon brand", "wag", "furrific", "vetriscience", "nutramax", "life on the line",
+    "heart eyes", "fur oil", "lifelines", "purina", "blue buffalo", "iams",
+]
+
+def brand_flag(series, extra=None):
+    """Boolean mask: keyword contains a known competitor brand token."""
+    hints = COMPETITOR_BRAND_HINTS + [b.strip().lower() for b in (extra or []) if b.strip()]
+    pat = "|".join(re.escape(h) for h in hints)
+    return series.str.lower().str.contains(pat, na=False)
+
+
+def priority_score(d):
+    """Volume per rank position: how much traffic a small rank gain unlocks.
+    A keyword at rank 36 with 50k volume beats one at rank 40 with 8k."""
+    return (d["volume"].fillna(0) / d["organic"].clip(lower=1)).round(0)
 
 
 # ----------------------------------------------------------------- charts
@@ -261,8 +283,9 @@ if xray_file is not None:
         st.error(f"X-Ray: {e}")
 
 CERE_COLS = {"keyword": "Keyword", "volume": "Volume", "organic": "Organic Rank",
-             "sponsored": "Sponsored Rank", "sales": "Kw Sales", "title_density": "Title Density",
-             "competing": "Competing", "trend": "Trend %", "bid": "Sugg. Bid $"}
+             "sponsored": "Sponsored Rank", "priority": "Priority", "sales": "Kw Sales",
+             "title_density": "Title Density", "competing": "Competing", "trend": "Trend %",
+             "bid": "Sugg. Bid $"}
 
 
 def cere_view(d, key, note):
@@ -317,7 +340,11 @@ if cere_df is not None:
         f_has = sb.checkbox("Only with tracked sales", key="kf_has")
         f_has_kw = sb.text_input("Contains", placeholder="salmon, dogs", key="kf_c")
         f_excl = sb.text_area("Exclude (one per line)", height=70, key="kf_x",
-                              placeholder="competitor brands")
+                              placeholder="extra competitor brands")
+        f_nobrand = sb.checkbox("Hide competitor-brand keywords", value=False, key="kf_nb",
+                                help="Terms containing a rival brand — you can't rank these "
+                                     "organically, only bid on them. On by default in the "
+                                     "ranking tabs.")
 
         def base(d):
             d = d[d["volume"].fillna(0).between(*f_vol)]
@@ -335,10 +362,12 @@ if cere_df is not None:
             xs = [t.strip().lower() for t in (f_excl or "").splitlines() if t.strip()]
             if xs:
                 d = d[~d["keyword"].str.lower().apply(lambda k: any(t in k for t in xs))]
+            if f_nobrand:
+                d = d[~brand_flag(d["keyword"], xs)]
             return d
 
         t = st.tabs(["📊 Dashboard", "All keywords", "Low competition", "High volume",
-                     "High sales", "Striking distance"])
+                     "High sales", "Striking distance", "PPC opportunities"])
 
         with t[0]:
             dd = base(df)
@@ -463,14 +492,69 @@ if cere_df is not None:
                           "the title, top bullets and core PPC.")
         with t[5]:
             st.markdown("#### Striking distance")
-            a, b, c = st.columns(3)
+            a, b, c, e = st.columns(4)
             lo = a.number_input("Rank from", 1, 300, 11, key="sd_lo")
-            hi = b.number_input("Rank to", 1, 306, 50, key="sd_hi")
+            hi = b.number_input("Rank to", 1, 306, 100, key="sd_hi")
             vl = c.number_input("Min volume", 0, vmax, min(300, vmax), step=50, key="sd_vl")
-            d = df[df["organic"].between(lo, hi) & (df["volume"].fillna(0) >= vl)].sort_values(
-                ["organic", "volume"], ascending=[True, False])
-            cere_view(d, "strike", "Already ranking, just off page 1. A listing tweak plus focused "
-                      "PPC pushes these up cheaply — usually the highest-ROI work in the export.")
+            sort_by = e.selectbox("Sort by", ["Priority (volume ÷ rank)", "Volume", "Rank"],
+                                  key="sd_sort")
+            d = df[df["organic"].between(lo, hi) & (df["volume"].fillna(0) >= vl)].copy()
+            if f_nobrand:
+                d = d[~brand_flag(d["keyword"])]
+            d["priority"] = priority_score(d)
+            if sort_by.startswith("Priority"):
+                d = d.sort_values("priority", ascending=False)
+            elif sort_by == "Volume":
+                d = d.sort_values("volume", ascending=False)
+            else:
+                d = d.sort_values("organic")
+            cere_view(d, "strike", "Already ranking, just off page 1. Sorted by <b>priority</b> — "
+                      "volume divided by rank position — so the keyword where a small rank gain "
+                      "unlocks the most traffic sits first. Usually the highest-ROI work in the export.")
+
+        with t[6]:
+            st.markdown("#### PPC opportunities")
+            st.markdown('<div class="note">Two paid-search plays the ranking tabs miss: keywords '
+                        'you <b>advertise but do not rank</b> for (earn what you rent) and '
+                        '<b>competitor-brand</b> terms (conquest bidding). Both read from the same '
+                        'export.</div>', unsafe_allow_html=True)
+
+            st.markdown("##### 1 · Rank gap — paid but not organic")
+            st.caption("You hold a Sponsored position but no organic rank. PPC is carrying traffic "
+                       "your listing could earn. Feed these into the title and backend terms, then "
+                       "push to convert the paid rank into an organic one.")
+            gap = df[(df["sponsored"].notna()) & (df["organic"].isna())].copy()
+            gap = gap[gap["volume"].fillna(0) >= 100]
+            gap = gap[~brand_flag(gap["keyword"])]
+            gap = gap.sort_values("volume", ascending=False)
+            if gap.empty:
+                st.info("No paid-only keywords above 100 volume — your organic coverage is strong.")
+            else:
+                cere_view(gap, "gap", "")
+
+            st.markdown("---")
+            st.markdown("##### 2 · Competitor-brand terms — conquest bidding")
+            st.caption("Terms containing a rival brand. You cannot rank these organically, but "
+                       "bidding on them puts you in front of shoppers already looking at a "
+                       "competitor. Add your own brands to the exclude box if any are yours.")
+            extra = [t_.strip().lower() for t_ in (f_excl or "").splitlines() if t_.strip()]
+            conquest = df[brand_flag(df["keyword"], extra)].copy()
+            conquest = conquest[conquest["volume"].fillna(0) >= 100].sort_values("volume", ascending=False)
+            if conquest.empty:
+                st.info("No competitor-brand terms found in this export.")
+            else:
+                cere_view(conquest, "conq", "")
+
+            st.markdown("---")
+            st.markdown("##### 3 · Undefended winners — organic top-30, no ad")
+            st.caption("You rank on page 1 organically but run no Sponsored ad, so a competitor can "
+                       "bid above your listing and take the click. Cheap to defend.")
+            undef = df[(df["organic"] <= 30) & (df["sponsored"].isna())].copy()
+            undef = undef.sort_values("volume", ascending=False)
+            if undef.empty:
+                st.info("Every page-1 keyword already has a Sponsored position.")
+            else:
+                cere_view(undef, "undef", "")
 
 
 # ----------------------------------------------------------------- X-RAY
