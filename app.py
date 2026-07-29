@@ -223,10 +223,8 @@ def brand_flag(series, extra=None):
     def is_brand_term(kw):
         tokens = re.findall(r'\b[a-zA-Z0-9]+\b', str(kw).lower())
         for token in tokens:
-            # Check explicit competitor brand hints
             if any(hint in str(kw).lower() for hint in hints):
                 return True
-            # Check if token is non-dictionary/distinctive token
             if token not in NON_BRAND_WORDS and len(token) > 2 and token.istitle():
                 return True
         return False
@@ -831,8 +829,12 @@ if xray_df is not None:
             f_rating = slider_for("rating", "Rating", step=0.1, as_int=False)
             f_reviews = slider_for("reviews", "Review count")
 
-        f_brand = st.text_input("Brand contains", placeholder="filter to one brand, optional",
-                                key="xr_brand")
+        # Added Title / Search Term filter beside Brand Filter
+        col_f1, col_f2 = st.columns(2)
+        with col_f1:
+            f_brand = st.text_input("Brand contains", placeholder="Filter by brand...", key="xr_brand")
+        with col_f2:
+            f_term = st.text_input("Search term in title", placeholder="Filter by keyword in item title...", key="xr_term")
 
         d = df.copy()
         if f_price: d = d[d["price"].fillna(-1).between(*f_price) | df["price"].isna()]
@@ -843,6 +845,8 @@ if xray_df is not None:
         if f_reviews: d = d[d["reviews"].fillna(-1).between(*f_reviews) | df["reviews"].isna()]
         if f_brand.strip():
             d = d[d["brand"].str.lower().str.contains(f_brand.strip().lower(), na=False)]
+        if f_term.strip():
+            d = d[d["title"].str.lower().str.contains(f_term.strip().lower(), na=False)]
 
         d = d.sort_values(sales_col, ascending=False, na_position="last")
 
@@ -908,11 +912,56 @@ if xray_df is not None:
             st.caption("Sorted by sales. Click any cell and press ⌘/Ctrl-C to copy it; use "
                        "Copy all ASINs for the set.")
 
-            with st.expander("Market summary"):
-                brands = d.groupby("brand").agg(
-                    listings=("asin", "count"),
-                    total_sales=(sales_col, "sum"),
-                    avg_price=("price", "mean")).sort_values("total_sales", ascending=False)
-                brands["avg_price"] = brands["avg_price"].round(2)
-                st.markdown("**Sales share by brand**")
-                st.dataframe(brands, use_container_width=True)
+            with st.expander("Market summary & Brand Share", expanded=True):
+                # Calculate brand metrics including AOV, Sales Share %, and Order Share %
+                tot_mkt_sales = d[sales_col].fillna(0).sum()
+                tot_mkt_orders = d["orders"].fillna(0).sum() if "orders" in d.columns else 0
+                tot_mkt_rev = d["revenue"].fillna(0).sum() if "revenue" in d.columns else 0
+
+                brand_agg = {"asin": "count", sales_col: "sum"}
+                if "orders" in d.columns: brand_agg["orders"] = "sum"
+                if "revenue" in d.columns: brand_agg["revenue"] = "sum"
+
+                brands = d.groupby("brand", as_index=False).agg(brand_agg)
+                brands = brands.rename(columns={"asin": "Listings", sales_col: "Sales"})
+                
+                # Sales Share %
+                brands["Sales Share %"] = (brands["Sales"] / tot_mkt_sales * 100).round(1) if tot_mkt_sales > 0 else 0.0
+                
+                # Orders & Order Share %
+                if "orders" in brands.columns:
+                    brands["Orders"] = brands["orders"].fillna(0).astype(int)
+                    brands["Order Share %"] = (brands["Orders"] / tot_mkt_orders * 100).round(1) if tot_mkt_orders > 0 else 0.0
+                    brands = brands.drop(columns=["orders"])
+                else:
+                    brands["Orders"] = 0
+                    brands["Order Share %"] = 0.0
+
+                # AOV Calculation
+                if "revenue" in brands.columns:
+                    brands["AOV $"] = (brands["revenue"] / brands["Orders"].where(brands["Orders"] > 0)).round(2)
+                    brands = brands.drop(columns=["revenue"])
+                else:
+                    brands["AOV $"] = 0.0
+
+                # Sort by Sales Share descending
+                brands = brands.sort_values("Sales Share %", ascending=False).reset_index(drop=True)
+
+                # Format DataFrame output
+                brand_cols = ["brand", "Listings", "Sales", "Sales Share %", "Orders", "Order Share %", "AOV $"]
+                brand_cols = [c for c in brand_cols if c in brands.columns]
+                
+                st.markdown("**Sales & Order Share by Brand**")
+                st.dataframe(
+                    brands[brand_cols].rename(columns={"brand": "Brand"}),
+                    use_container_width=True,
+                    height=350,
+                    hide_index=True,
+                    column_config={
+                        "Sales Share %": st.column_config.NumberColumn(format="%.1f%%"),
+                        "Order Share %": st.column_config.NumberColumn(format="%.1f%%"),
+                        "AOV $": st.column_config.NumberColumn(format="$%.2f"),
+                        "Sales": st.column_config.NumberColumn(format="%d"),
+                        "Orders": st.column_config.NumberColumn(format="%d"),
+                    }
+                )
